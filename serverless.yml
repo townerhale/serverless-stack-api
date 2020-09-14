@@ -27,70 +27,72 @@ provider:
   iamRoleStatements:
     - Effect: Allow
       Action:
-        - dynamodb: DescribeTable
-        - dynamodb: Query
-        - dynamodb: Scan
-        - dynamodb: GetItem
-        - dynamodb: PutItem
-        - dynamodb: UpdateItem
-        - dynamodb: DeleteItem
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      # Restrict our IAM role permissions to
+      # the specific table for the stage
       Resource: "arn:aws:dynamodb:us-east-1:*:*"
 
-  functions:
-   # Defines an HTTP API endpoint that calls the main
-   # function in create.js
-   # - path: url path is /notes
-   # - method: POST request retrieves a request in the body
-   # - cors: enabled CORS (Cross-Origin Resource
-   # domain api call
-   # - authorizer: authenticate using the AWS IAM role
-    create:
-      handler: create.main
+functions:
+  # Defines an HTTP API endpoint that calls the main
+  # function in create.js
+  # - path: url path is /notes
+  # - method: POST request retrieves a request in the body
+  # - cors: enabled CORS (Cross-Origin Resource
+  # domain api call
+  # - authorizer: authenticate using the AWS IAM role
+  create:
+    handler: create.main
+    events:
+      - http:
+          path: notes
+          method: post
+          cors: true
+          authorizer: aws_iam
+  get:
+      handler: get.main
+      events:
+        - http:
+            path: notes/{id}
+            method: get
+            cors: true
+            authorizor: aws_iam
+  list:
+      handler: list.main
       events:
         - http:
             path: notes
-            method: post
+            method: get
             cors: true
-            authorizer: aws_iam
-    get:
-        handler: get.main
-        events:
-          - http:
-              path: notes/{id}
-              method: get
-              cors: true
-              authorizor: aws_iam
-    list:
-        handler: list.main
-        events:
-          - http:
-              path: notes
-              method: get
-              cors: true
-              authorizor: aws_iam
-    update:
-        handler: update.main
-        events:
-          - http:
-              path: notes/{id}
-              method: put
-              cors: true
-              authorizor: aws_iam
-    delete:
-        handler: delete.main
-        events:
-          - http:
-              path: notes/{id}
-              method: delete
-              cors: true
-              authorizor: aws_iam
-    billing:
-      handler: billing.main
+            authorizor: aws_iam
+  update:
+      handler: update.main
       events:
         - http:
-            path: billing
-            method: post
+            path: notes/{id}
+            method: put
             cors: true
-            authorizer: aws_iam
-  resources:
-    - ${file(resources/api-gateway-errors.yml)}
+            authorizor: aws_iam
+  delete:
+      handler: delete.main
+      events:
+        - http:
+            path: notes/{id}
+            method: delete
+            cors: true
+            authorizor: aws_iam
+  billing:
+      handler: billing.main
+      events:
+      - http:
+          path: billing
+          method: post
+          cors: true
+          authorizer: aws_iam
+resources:
+  - ${file(resources/api-gateway-errors.yml)}
