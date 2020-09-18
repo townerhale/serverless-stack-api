@@ -36,15 +36,15 @@ provider:
         - dynamodb:DeleteItem
       # Restrict our IAM role permissions to
       # the specific table for the stage
-      Resource: "arn:aws:dynamodb:us-east-1:*:*"
+      Resource:
+        - "Fn::GetAtt": [ NotesTable, Arn ]
 
 functions:
-  # Defines an HTTP API endpoint that calls the main
-  # function in create.js
+  # Defines an HTTP API endpoint that calls the main function in create.js
   # - path: url path is /notes
-  # - method: POST request retrieves a request in the body
-  # - cors: enabled CORS (Cross-Origin Resource
-  # domain api call
+  # - method: POST request
+  # - cors: enabled CORS (Cross-Origin Resource Sharing) for browser cross
+  #     domain api call
   # - authorizer: authenticate using the AWS IAM role
   create:
     handler: create.main
@@ -54,45 +54,69 @@ functions:
           method: post
           cors: true
           authorizer: aws_iam
+
   get:
-      handler: get.main
-      events:
-        - http:
-            path: notes/{id}
-            method: get
-            cors: true
-            authorizor: aws_iam
+    # Defines an HTTP API endpoint that calls the main function in get.js
+    # - path: url path is /notes/{id}
+    # - method: GET request
+    handler: get.main
+    events:
+      - http:
+          path: notes/{id}
+          method: get
+          cors: true
+          authorizer: aws_iam
+
   list:
-      handler: list.main
-      events:
-        - http:
-            path: notes
-            method: get
-            cors: true
-            authorizor: aws_iam
+    # Defines an HTTP API endpoint that calls the main function in list.js
+    # - path: url path is /notes
+    # - method: GET request
+    handler: list.main
+    events:
+      - http:
+          path: notes
+          method: get
+          cors: true
+          authorizer: aws_iam
+
   update:
-      handler: update.main
-      events:
-        - http:
-            path: notes/{id}
-            method: put
-            cors: true
-            authorizor: aws_iam
+    # Defines an HTTP API endpoint that calls the main function in update.js
+    # - path: url path is /notes/{id}
+    # - method: PUT request
+    handler: update.main
+    events:
+      - http:
+          path: notes/{id}
+          method: put
+          cors: true
+          authorizer: aws_iam
+
   delete:
-      handler: delete.main
-      events:
-        - http:
-            path: notes/{id}
-            method: delete
-            cors: true
-            authorizor: aws_iam
+    # Defines an HTTP API endpoint that calls the main function in delete.js
+    # - path: url path is /notes/{id}
+    # - method: DELETE request
+    handler: delete.main
+    events:
+      - http:
+          path: notes/{id}
+          method: delete
+          cors: true
+          authorizer: aws_iam
+
   billing:
-      handler: billing.main
-      events:
+    # Defines an HTTP API endpoint that calls the main function in billing.js
+    # - path: url path is /billing
+    # - method: POST request
+    handler: billing.main
+    events:
       - http:
           path: billing
           method: post
           cors: true
           authorizer: aws_iam
+# Create our resources with separate CloudFormation templates
 resources:
+  # API Gateway Errors
   - ${file(resources/api-gateway-errors.yml)}
+  - ${file(resources/dynamodb-table.yml)}
+

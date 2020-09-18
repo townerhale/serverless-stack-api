@@ -2,6 +2,7 @@
     "pathParameters": {
         "id": "450c5030-f538-11ea-b238-cd8a65c06012"
     },
+    "body": "{\"content\":\"hello world\",\"attachment\":\"hello.jpg\"}",
     "requestContext": {
         "identity": {
             "cognitoIdentityId": "USER-SUB-1234"
